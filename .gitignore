@@ -1,0 +1,37 @@
+# General
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+temp.txt
+tmp/
+
+# Python / Backend
+backend/__pycache__/
+backend/*.py[cod]
+backend/*$py.class
+backend/.venv/
+backend/.env
+backend/build/
+backend/dist/
+backend/*.egg-info/
+backend/.coverage
+backend/htmlcov/
+backend/.pytest_cache/
+
+# Node / Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/coverage/
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+
+# Logs
+logs/
+*.log

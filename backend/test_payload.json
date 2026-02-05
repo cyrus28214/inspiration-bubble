@@ -1,0 +1,70 @@
+{
+  "current_input": "在应用场景方面，可用于会议中实时生成会议纪要，头脑风暴时快速梳理思路并获取创意建议，也能满足个人用户的日常灵感捕捉与整理需求，多场景适配高效思维管理。",
+  "history_inputs": [
+    "AI 头脑风暴助手，在核心功能方面，支持语音快速输入想法，总结核心观点，绘制思维导图，提供相关灵感建议。在技术实现方面，采用前后端分离架构，搭载 Web 语音转文字技术，搭配精细化 AI 模型提示词。"
+  ],
+  "mindmap": {
+    "ai_brainstorming_assistant": {
+      "id": "ai_brainstorming_assistant",
+      "text": "AI 头脑风暴助手",
+      "children": [
+        "core_features",
+        "technical_implementation"
+      ]
+    },
+    "core_features": {
+      "id": "core_features",
+      "text": "核心功能",
+      "children": [
+        "voice_input",
+        "summary_extraction",
+        "mind_map_generation",
+        "inspiration_suggestions"
+      ]
+    },
+    "voice_input": {
+      "id": "voice_input",
+      "text": "语音快速输入想法",
+      "children": []
+    },
+    "summary_extraction": {
+      "id": "summary_extraction",
+      "text": "总结核心观点",
+      "children": []
+    },
+    "mind_map_generation": {
+      "id": "mind_map_generation",
+      "text": "绘制思维导图",
+      "children": []
+    },
+    "inspiration_suggestions": {
+      "id": "inspiration_suggestions",
+      "text": "提供相关灵感建议",
+      "children": []
+    },
+    "technical_implementation": {
+      "id": "technical_implementation",
+      "text": "技术实现",
+      "children": [
+        "architecture",
+        "voice_to_text_tech",
+        "ai_model_prompting"
+      ]
+    },
+    "architecture": {
+      "id": "architecture",
+      "text": "前后端分离架构",
+      "children": []
+    },
+    "voice_to_text_tech": {
+      "id": "voice_to_text_tech",
+      "text": "Web 语音转文字技术",
+      "children": []
+    },
+    "ai_model_prompting": {
+      "id": "ai_model_prompting",
+      "text": "精细化 AI 模型提示词",
+      "children": []
+    }
+  }
+}

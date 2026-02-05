@@ -1,0 +1,269 @@
+openapi: 3.1.0
+info:
+  title: Inspiration Bubble API
+  version: 1.0.0
+  description: API for Inspiration Bubble - An AI-powered brainstorming and mind-mapping tool.
+servers:
+  - url: http://localhost:8000
+    description: Local Development Server
+
+paths:
+  /api/v1/analyze:
+    post:
+      summary: Analyze Idea
+      description: Processes user input text to generate brainstorming keywords, connections, and summaries.
+      operationId: analyze_idea
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyzeRequest'
+      responses:
+        '200':
+          description: Successful analysis
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyzeResponse'
+        '400':
+          description: Invalid input
+        '500':
+          description: Server error
+
+  /api/v1/summarize:
+    post:
+      summary: Summarize Content
+      description: Generates a concise summary and tags for a specific inspiration item or search result.
+      operationId: summarize_content
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SummarizeRequest'
+      responses:
+        '200':
+          description: Successful summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SummarizeResponse'
+        '500':
+          description: Server error
+
+  /api/v1/inspiration:
+    get:
+      summary: Get Inspiration
+      description: Search for inspiration based on a query string.
+      operationId: get_inspiration
+      parameters:
+        - in: query
+          name: query
+          schema:
+            type: string
+          required: true
+          description: The search query for inspiration
+      responses:
+        '200':
+          description: List of inspiration items
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InspirationResponse'
+
+  /api/v1/mindmap/update:
+    post:
+      summary: Update Mindmap based on Transcript
+      description: Generates actions to modify mindmap based on speech input.
+      operationId: update_mindmap
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MindmapUpdateRequest'
+      responses:
+        '200':
+          description: List of actions to update the mindmap
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MindmapUpdateResponse'
+
+components:
+  schemas:
+    AnalyzeRequest:
+      type: object
+      required:
+        - text
+      properties:
+        text:
+          type: string
+          description: The raw idea text input by the user.
+          example: "I want to build a sustainable coffee shop app."
+        context_history:
+          type: array
+          items:
+            type: string
+          description: Optional previous thoughts to maintain context.
+
+    AnalyzeResponse:
+      type: object
+      required:
+        - summary
+        - keywords
+        - connections
+      properties:
+        summary:
+          type: string
+          description: A high-level AI summary of the input idea.
+        keywords:
+          type: array
+          items:
+            $ref: '#/components/schemas/Keyword'
+        connections:
+          type: array
+          items:
+            $ref: '#/components/schemas/Connection'
+        thoughts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Thought'
+        inspiration:
+          type: array
+          items:
+            $ref: '#/components/schemas/InspirationItem'
+
+    Keyword:
+      type: object
+      required:
+        - name
+        - level
+      properties:
+        name:
+          type: string
+        level:
+          type: integer
+          description: Visual hierarchy level (1=Central, 2=Main Branch, 3=Leaf).
+        isCore:
+          type: boolean
+          default: false
+        parent:
+          type: string
+          nullable: true
+          description: Name of the parent node.
+
+    Connection:
+      type: object
+      required:
+        - source
+        - target
+      properties:
+        source:
+          type: string
+        target:
+          type: string
+        strength:
+          type: number
+          default: 1
+          description: Analysis confidence or correlation strength.
+
+    Thought:
+      type: object
+      properties:
+        original:
+          type: string
+        summary:
+          type: string
+        keywords:
+          type: array
+          items:
+            type: string
+
+    InspirationItem:
+      type: object
+      properties:
+        title:
+          type: string
+        link:
+          type: string
+        snippet:
+          type: string
+
+    InspirationResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/InspirationItem'
+
+    SummarizeRequest:
+      type: object
+      required:
+        - title
+        - content
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+          description: The snippet or text content to summarize.
+
+    SummarizeResponse:
+      type: object
+      properties:
+        summary:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+
+    MindmapUpdateRequest:
+      type: object
+      required:
+        - messages
+      properties:
+        messages:
+          type: array
+          items:
+            type: string
+          description: List of messages, where the last one is the current input.
+        mindmap:
+          type: object
+          additionalProperties:
+             $ref: '#/components/schemas/MindmapNode'
+          description: Current mindmap state as a map of ID to Node.
+
+    MindmapNode:
+      type: object
+      required:
+        - id
+        - text
+      properties:
+        id:
+          type: string
+        text:
+          type: string
+        children:
+          type: array
+          items:
+            type: string
+          default: []
+
+    MindmapUpdateResponse:
+      type: object
+      required:
+        - summary
+        - updated_nodes
+      properties:
+        summary:
+           type: string
+           description: Summary of the changes.
+        updated_nodes:
+           type: array
+           items:
+             $ref: '#/components/schemas/MindmapNode'
+
