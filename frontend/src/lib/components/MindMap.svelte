@@ -148,7 +148,7 @@
   }
 </script>
 
-<div class="mindmap-wrapper" bind:this={container} on:contextmenu|preventDefault>
+<div class="mindmap-wrapper" bind:this={container} on:contextmenu|preventDefault role="application">
     {#if $isAnalyzing}
         <div class="loading-overlay">
             <div class="spinner"></div>

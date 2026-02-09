@@ -110,3 +110,41 @@ InspirationBubble-beta/
 │
 └── README.md
 ```
+
+## 🐳 Docker 部署 (Deployment)
+
+本项目支持使用 Docker (或 Podman) 进行一键构建和部署。应用包含 Nginx 反向代理，统一部署在 7860 端口。
+
+### 1. 构建镜像 (Build)
+
+在项目根目录下运行以下命令构建镜像：
+
+```bash
+# 使用 Docker
+docker build -t inspiration-bubble .
+
+# 使用 Podman
+podman build -t inspiration-bubble .
+```
+
+### 2. 运行容器 (Run)
+
+启动容器并将容器内的 `7860` 端口映射到宿主机。
+
+```bash
+# 使用 Docker
+docker run --rm -it -p 7860:7860 inspiration-bubble
+
+# 使用 Podman
+podman run --rm -it -p 7860:7860 inspiration-bubble
+```
+
+*   `--rm`: 容器停止后自动删除
+*   `-it`: 交互模式 (显示日志)
+*   `-p 7860:7860`: 端口映射
+
+### 3. 访问应用
+
+当终端显示 `Uvicorn running on ...` 时，打开浏览器访问：
+
+👉 [http://localhost:7860](http://localhost:7860)

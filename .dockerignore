@@ -1,0 +1,45 @@
+# Git
+.git
+.gitignore
+
+# Environment variables (security)
+.env
+.env.*
+*.env
+backend/.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+env/
+venv/
+backend/.venv/
+backend/__pycache__/
+
+# Node
+node_modules/
+frontend/node_modules/
+npm-debug.log
+pnpm-debug.log
+yarn-error.log
+
+# Build outputs (we build inside Docker)
+frontend/dist/
+
+# IDE/Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Docker (optional, but good practice to ignore the build context files themselves if not needed)
+Dockerfile
+.dockerignore
+
+# Documentation & Temp files
+*.md
+*.txt

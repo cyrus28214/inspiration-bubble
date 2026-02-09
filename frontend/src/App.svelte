@@ -166,14 +166,5 @@
       pointer-events: none; /* Let clicks pass through to canvas unless on buttons */
   }
   .visual-overlay.left-top { top: 10px; left: 10px; }
-  .visual-overlay.right-top { top: 10px; right: 10px; pointer-events: auto; }
-  
-  .action-btn {
-      background: #f0f7ff; 
-      color: #4a90e2; 
-      border: 1px solid #d0e3ff; 
-      border-radius: 4px; 
-      padding: 5px 12px; 
-      cursor: pointer;
-  }
+
 </style>

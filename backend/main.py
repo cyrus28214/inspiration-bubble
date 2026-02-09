@@ -1,9 +1,10 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import List, Optional
+from pathlib import Path
 import os
-import json
-import httpx
 from dotenv import load_dotenv
 from models import *
 from logger import setup_logger
@@ -54,6 +55,31 @@ async def analyze_thought(request: ThoughtRequest):
     
     return await analyze_thought_agent(request.text)
 
+# Serve Static Files (Frontend)
+static_dir = os.path.join(os.path.dirname(__file__), "static")
+assets_dir = os.path.join(static_dir, "assets")
+
+if os.path.exists(assets_dir):
+    app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+else:
+    logger.warning(f"Assets directory not found at {assets_dir}")
+
+@app.get("/{full_path:path}")
+async def serve_spa(full_path: str):
+    static_path = Path(static_dir).resolve()
+    requested_path = (static_path / full_path).resolve()
+    if not str(requested_path).startswith(str(static_path)):
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    if requested_path.is_file():
+        return FileResponse(requested_path)
+
+    index_file = static_path / "index.html"
+    if index_file.exists():
+        return FileResponse(index_file)
+
+    raise HTTPException(status_code=404, detail="Not Found")
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=7860)
