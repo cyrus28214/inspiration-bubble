@@ -1,11 +1,11 @@
 <script lang="ts">
   import SidebarSection from './SidebarSection.svelte';
-  import { brainstormStore } from '../stores';
+  import { brainstormStore, isAnalyzing } from '../stores';
   import { performMindmapUpdate } from '../operations';
 
   let ideaText = "";
   // Use store loading state instead of local
-  $: isLoading = $brainstormStore.isAnalyzing || false;
+  $: isLoading = $isAnalyzing || false;
 
   async function handleSubmit() {
       if (!ideaText.trim() || isLoading) return;

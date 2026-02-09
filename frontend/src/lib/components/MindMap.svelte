@@ -4,7 +4,7 @@
   // Try importing CSS. If this fails, user might need to adjust vite config or alias.
   import "simple-mind-map/dist/simpleMindMap.esm.css";
 
-  import { brainstormStore } from '../stores';
+  import { brainstormStore, isAnalyzing } from '../stores';
   import { transformNodesToMindMap, flattenMindMapData } from '../utils/mindmapTransform';
   import type { MindMapData } from '../utils/mindmapTransform';
 
@@ -23,11 +23,6 @@
     unsubscribe = brainstormStore.subscribe(state => {
         if (isUpdatingFromMap) return;
 
-        // Close context menu if analyzing
-        if (state.isAnalyzing) {
-            showContextMenu = false;
-        }
-
         // Store internally works with MindNode objects (id/text separation handled)
         // transformNodesToMindMap handles converting MindNode[] -> MindMapData
         const data = transformNodesToMindMap(state.nodes);
@@ -35,19 +30,35 @@
         if (mindMap) {
              try {
                 mindMap.setData(data);
-                // Update mode based on analyzing state
-                if (mindMap.setMode) {
-                    mindMap.setMode(state.isAnalyzing ? 'readonly' : 'edit');
-                }
              } catch(e) {
                  console.error("MindMap redraw error", e);
              }
         } else {
-             initMindMap(data, state.isAnalyzing);
+             // Initial creation
+             // We can check isAnalyzing store here but usually false on init
+             initMindMap(data, false);
+        }
+    });
+
+    // Reactive statement for analyzing state specific effects
+    // This separates data updates from UI state updates
+    const unsubscribeAnalyzing = isAnalyzing.subscribe(analyzing => {
+        if (analyzing) {
+            showContextMenu = false;
+        }
+        if (mindMap && mindMap.setMode) {
+             mindMap.setMode(analyzing ? 'readonly' : 'edit');
         }
     });
 
     window.addEventListener('keydown', handleGlobalKeyDown);
+
+    // Merge unsubscribes
+    const oldUnsub = unsubscribe;
+    unsubscribe = () => {
+        oldUnsub();
+        unsubscribeAnalyzing();
+    };
   });
 
   onDestroy(() => {
@@ -138,7 +149,7 @@
 </script>
 
 <div class="mindmap-wrapper" bind:this={container} on:contextmenu|preventDefault>
-    {#if $brainstormStore.isAnalyzing}
+    {#if $isAnalyzing}
         <div class="loading-overlay">
             <div class="spinner"></div>
             <p>AI 正在优化思维导图...</p>
@@ -146,7 +157,7 @@
     {/if}
 </div>
 
-{#if showContextMenu && !$brainstormStore.isAnalyzing}
+{#if showContextMenu && !$isAnalyzing}
   <div class="context-menu" style="top: {contextMenuY}px; left: {contextMenuX}px">
       <div class="menu-item" on:click|stopPropagation={() => handleMenuClick('INSERT_NODE')} role="button" tabindex="0" on:keydown={(e) => e.key === 'Enter' && handleMenuClick('INSERT_NODE')}>
           添加同级节点 (Enter)

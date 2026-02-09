@@ -5,22 +5,15 @@ import type { MindmapNode } from './api';
 const defaultData: IdeaInput = {
     thoughts: [],
     nodes: [],
-    connections: [],
     summary: "",
     inspiration: [],
     voiceTextHistory: [],
-    showInspiration: false,
-    isAnalyzing: false,
-    zoom: {
-        scale: 1,
-        min: 0.2,
-        max: 3,
-        offsetX: 0,
-        offsetY: 0
-    }
+    showInspiration: false
 };
 
 export const highlightedKeyword = writable<string | null>(null);
+// Separate transient state proper: loading indicator
+export const isAnalyzing = writable<boolean>(false);
 
 function createBrainstormStore() {
     const { subscribe, set, update } = writable<IdeaInput>(defaultData);
@@ -29,9 +22,6 @@ function createBrainstormStore() {
         subscribe,
         set,
         update,
-        setAnalyzing: (isAnalyzing: boolean) => {
-            update(s => ({ ...s, isAnalyzing }));
-        },
         updateFromAI: (updatedNodes: MindmapNode[]) => {
             update(state => {
                  let hasChanges = false;
@@ -100,6 +90,12 @@ function createBrainstormStore() {
 
                     // Also cleanup legacy 'keywords' property
                     delete parsed.keywords;
+                    // Cleanup removed properties
+                    delete parsed.connections;
+                    delete parsed.zoom;
+
+                    // reset transient state - now removed from store completely, but removing potential garbage
+                    delete parsed.isAnalyzing;
 
                     update(stats => ({ ...stats, ...parsed }));
                 } catch (e) {
@@ -158,54 +154,10 @@ function createBrainstormStore() {
 
                  // Filter lists
                  state.nodes = state.nodes.filter(k => !toDelete.has(k.id));
-                 state.connections = state.connections.filter(c => !toDelete.has(c.source) && !toDelete.has(c.target));
                  
                  localStorage.setItem("brainstormData_MVP", JSON.stringify(state));
                  return state;
              });
-        },
-        // This is mainly for legacy AI response merging, if still needed.
-        // It assumes the AI result uses the new MindNode structure.
-        mergeAIResult: (result: { nodes: MindNode[], connections: {source:string, target:string}[] }) => {
-            update(state => {
-                 let hasChanges = false;
-                 // Merge Nodes
-                 result.nodes.forEach(newNode => {
-                     const existing = state.nodes.find(k => k.id === newNode.id);
-                     if (existing) {
-                         if (existing.level !== newNode.level || (newNode.parent && existing.parent !== newNode.parent)) {
-                            existing.level = newNode.level;
-                            existing.parent = newNode.parent;
-                            hasChanges = true;
-                         }
-                     } else {
-                         state.nodes.push({
-                             ...newNode,
-                             isCollapsed: false,
-                             // Assign temp coords, layout will fix
-                             x: Math.random() * 400 + 200,
-                             y: Math.random() * 400 + 100
-                         });
-                         hasChanges = true;
-                     }
-                 });
-
-                 // Merge Connections
-                 if (result.connections) {
-                    result.connections.forEach(newConn => {
-                        const exists = state.connections.some(c => c.source === newConn.source && c.target === newConn.target);
-                        if (!exists) {
-                            state.connections.push(newConn);
-                            hasChanges = true;
-                        }
-                    });
-                 }
-                 
-                 if (hasChanges) {
-                    localStorage.setItem("brainstormData_MVP", JSON.stringify(state));
-                 }
-                 return state;
-            });
         }
     };
 }

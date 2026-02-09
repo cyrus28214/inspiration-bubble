@@ -1,6 +1,18 @@
 <script lang="ts">
   import SidebarSection from './SidebarSection.svelte';
   import { brainstormStore } from '../stores';
+  // import type { Thought } from '../types'; 
+
+  let expandedIndices = new Set<number>();
+
+  function toggleExpand(index: number) {
+      if (expandedIndices.has(index)) {
+          expandedIndices.delete(index);
+      } else {
+          expandedIndices.add(index);
+      }
+      expandedIndices = expandedIndices; // trigger reactivity
+  }
 </script>
 
 <SidebarSection title="最近灵感">
@@ -12,7 +24,13 @@
         {/if}
 
         {#each $brainstormStore.thoughts as thought, i}
-             <div class="thought-item">
+             <!-- svelte-ignore a11y-click-events-have-key-events -->
+             <!-- svelte-ignore a11y-no-static-element-interactions -->
+             <div 
+                class="thought-item" 
+                class:expanded={expandedIndices.has(i)}
+                on:click={() => toggleExpand(i)}
+             >
                 <div class="original-text">
                     <span>{thought.original || thought.summary || '未命名'}</span>
                 </div>
@@ -61,13 +79,34 @@
         border-radius: 6px;
         margin-bottom: 12px;
         font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        max-height: 50px; /* Collapsed height approx */
+        overflow: hidden;
     }
+    .thought-item.expanded {
+        max-height: 500px; /* Expanded max height */
+        background-color: #f8fbff;
+    }
+
+    /* Adjust layout for collapsed state to hide details */
+    .thought-item:not(.expanded) .thought-details {
+        display: none;
+    }
+
     .original-text {
         font-weight: bold;
         color: #333;
         margin-bottom: 10px;
         line-height: 1.5;
+        white-space: nowrap; 
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
+    .thought-item.expanded .original-text {
+        white-space: normal;
+    }
+
     .original-text span {
         word-wrap: break-word;
     }

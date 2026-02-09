@@ -1,5 +1,5 @@
 import { get } from 'svelte/store';
-import { brainstormStore } from './stores';
+import { brainstormStore, isAnalyzing } from './stores';
 import { api } from './api';
 import { convertStoreToAPIMap } from './utils/mindmapTransform';
 
@@ -8,12 +8,12 @@ export async function performMindmapUpdate(input: string, options: { inputAlread
     if (!input || !input.trim()) return;
 
     // Prevent concurrent updates if already analyzing
-    if (get(brainstormStore).isAnalyzing) {
+    if (get(isAnalyzing)) {
         console.warn("Skipping update, AI is already analyzing.");
         return;
     }
 
-    brainstormStore.setAnalyzing(true);
+    isAnalyzing.set(true);
 
     try {
         const currentState = get(brainstormStore);
@@ -28,25 +28,42 @@ export async function performMindmapUpdate(input: string, options: { inputAlread
 
         const mindmapMap = convertStoreToAPIMap(currentState.nodes);
 
-        // 1. Call Update Mindmap API
-        const updateRes = await api.updateMindmap({
-            messages: historyForApi,
-            mindmap: mindmapMap
-        });
+        // 1. Parallel: Analyze Thought & Update Mindmap
+        const [thoughtRes, updateRes] = await Promise.all([
+            api.analyzeThought(input),
+            api.updateMindmap({
+                messages: historyForApi,
+                mindmap: mindmapMap
+            })
+        ]);
 
         // 2. Update Store with AI changes
         brainstormStore.updateFromAI(updateRes.updated_nodes);
         
-        // 3. Update History (only if not already there) Summary is always updated
-        brainstormStore.update(s => ({
-            ...s,
-            voiceTextHistory: options.inputAlreadyInHistory ? s.voiceTextHistory : historyForApi,
-            summary: updateRes.summary 
-        }));
+        // 3. Update History 
+        // We use the Summary and Keywords from the dedicated 'analyzeThought' API
+        // But we might also want to mix in meaningful new nodes from the mindmap as "keywords" if desired.
+        // For now, let's respect the dedicated agent's output which is cleaner.
+        brainstormStore.update(s => {
+            const newThought = {
+                original: input,
+                summary: thoughtRes.summary,
+                keywords: thoughtRes.keywords
+            };
+            
+            const newState = {
+                ...s,
+                thoughts: options.inputAlreadyInHistory ? s.thoughts : [newThought, ...s.thoughts],
+                voiceTextHistory: options.inputAlreadyInHistory ? s.voiceTextHistory : historyForApi,
+                summary: updateRes.summary 
+            };
+            localStorage.setItem("brainstormData_MVP", JSON.stringify(newState));
+            return newState;
+        });
         
     } catch (error) {
         console.error("Analysis/Update failed:", error);
     } finally {
-        brainstormStore.setAnalyzing(false);
+        isAnalyzing.set(false);
     }
 }

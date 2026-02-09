@@ -14,26 +14,17 @@ export interface MindNode {
     subtreeHeight?: number;
 }
 
-export interface Connection {
-    source: string; // keyword id
-    target: string; // keyword id
-    strength: number;
+export interface Thought {
+    original: string;
+    summary: string;
+    keywords: (string | { text?: string; name?: string })[];
 }
 
 export interface IdeaInput {
-    thoughts: any[];
+    thoughts: Thought[];
     nodes: MindNode[];
-    connections: Connection[];
     summary: string;
     inspiration: any[];
     voiceTextHistory: string[];
     showInspiration: boolean;
-    isAnalyzing?: boolean;
-    zoom: {
-        scale: number;
-        min: number;
-        max: number;
-        offsetX: number;
-        offsetY: number;
-    };
 }

@@ -4,8 +4,6 @@
 .vscode/
 *.swp
 *.swo
-temp.txt
-tmp/
 
 # Python / Backend
 backend/__pycache__/

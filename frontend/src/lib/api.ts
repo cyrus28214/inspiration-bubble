@@ -1,35 +1,8 @@
 // Type definitions matching Backend Pydantic models
-export interface APIKeyword {
-    name: string;
-    level: number;
-    isCore: boolean;
-    parent?: string | null;
-}
-
-export interface APIConnection {
-    source: string;
-    target: string;
-    strength: number;
-}
-
-export interface APIThought {
-    original: string;
-    summary: string;
-    keywords: string[];
-}
-
 export interface APIInspirationItem {
     title: string;
     link: string;
     snippet: string;
-}
-
-export interface AnalyzeResponse {
-    summary: string;
-    keywords: APIKeyword[];
-    connections: APIConnection[];
-    thoughts: APIThought[];
-    inspiration: APIInspirationItem[];
 }
 
 export interface SummarizeResponse {
@@ -59,16 +32,6 @@ export interface MindmapUpdateResponse {
 
 // API Client
 export const api = {
-    analyze: async (text: string, context_history: string[] = []): Promise<AnalyzeResponse> => {
-        const response = await fetch('/api/v1/analyze', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text, context_history })
-        });
-        if (!response.ok) throw new Error('Failed to analyze idea');
-        return response.json();
-    },
-
     summarize: async (title: string, content: string): Promise<SummarizeResponse> => {
         const response = await fetch('/api/v1/summarize', {
             method: 'POST',
@@ -92,6 +55,16 @@ export const api = {
             body: JSON.stringify(req)
         });
         if (!response.ok) throw new Error('Failed to update mindmap');
+        return response.json();
+    },
+
+    analyzeThought: async (text: string): Promise<{summary: string, keywords: string[]}> => {
+        const response = await fetch('/api/v1/thought/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text })
+        });
+        if (!response.ok) throw new Error('Failed to analyze thought');
         return response.json();
     }
 };
