@@ -91,6 +91,32 @@ paths:
               schema:
                 $ref: '#/components/schemas/MindmapUpdateResponse'
 
+  /api/v1/inspiration/recommend:
+    post:
+      summary: Recommend Inspirations
+      description: >-
+        Recommends 3-5 creative inspirations based on the current text and mindmap
+        structure. The returned inspirations will not duplicate existing content
+        or existing mindmap nodes.
+      operationId: recommend_inspiration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InspirationRecommendRequest'
+      responses:
+        '200':
+          description: A list of recommended inspirations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InspirationRecommendResponse'
+        '400':
+          description: Invalid input (e.g. empty messages)
+        '500':
+          description: Server error
+
 components:
   schemas:
     AnalyzeRequest:
@@ -266,4 +292,56 @@ components:
            type: array
            items:
              $ref: '#/components/schemas/MindmapNode'
+
+    InspirationRecommendRequest:
+      type: object
+      required:
+        - messages
+      properties:
+        messages:
+          type: array
+          items:
+            type: string
+          description: List of user messages providing context for inspiration.
+        mindmap:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/MindmapNode'
+          description: Current mindmap state as a map of ID to Node.
+
+    InspirationSuggestion:
+      type: object
+      required:
+        - title
+        - description
+        - reason
+        - node_id
+        - parent_node_id
+      properties:
+        title:
+          type: string
+          description: Short title summarizing the inspiration.
+        description:
+          type: string
+          description: Detailed description of the inspiration and its value.
+        reason:
+          type: string
+          description: Why this inspiration is relevant to the current topic.
+        node_id:
+          type: string
+          description: Unique snake_case ID for the new mindmap node.
+        parent_node_id:
+          type: string
+          description: ID of an existing mindmap node to attach this inspiration under.
+
+    InspirationRecommendResponse:
+      type: object
+      required:
+        - suggestions
+      properties:
+        suggestions:
+          type: array
+          items:
+            $ref: '#/components/schemas/InspirationSuggestion'
+          description: List of 3-5 recommended inspirations.
 

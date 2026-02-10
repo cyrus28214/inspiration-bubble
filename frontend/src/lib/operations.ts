@@ -1,5 +1,5 @@
 import { get } from 'svelte/store';
-import { brainstormStore, isAnalyzing } from './stores';
+import { brainstormStore, isAnalyzing, isRecommending } from './stores';
 import { api } from './api';
 import { convertStoreToAPIMap } from './utils/mindmapTransform';
 
@@ -61,9 +61,61 @@ export async function performMindmapUpdate(input: string, options: { inputAlread
             return newState;
         });
         
+        // Auto-trigger inspiration recommendation if enabled
+        const afterState = get(brainstormStore);
+        if (afterState.autoInspiration && afterState.showInspiration) {
+            fetchInspirations();
+        }
+
     } catch (error) {
         console.error("Analysis/Update failed:", error);
     } finally {
         isAnalyzing.set(false);
+    }
+}
+
+export async function fetchInspirations() {
+    if (get(isRecommending)) {
+        console.warn("Skipping, already recommending inspirations.");
+        return;
+    }
+
+    const currentState = get(brainstormStore);
+
+    const summaryMessages = currentState.thoughts
+        .map(thought => thought.summary)
+        .filter(Boolean);
+
+    const combinedMessages = Array.from(
+        new Set([...currentState.voiceTextHistory, ...summaryMessages])
+    );
+
+    if (combinedMessages.length === 0) {
+        console.warn("No messages yet, cannot recommend inspirations.");
+        return;
+    }
+
+    isRecommending.set(true);
+
+    try {
+        const mindmapMap = convertStoreToAPIMap(currentState.nodes);
+
+        const res = await api.recommendInspirations({
+            messages: combinedMessages,
+            mindmap: mindmapMap
+        });
+
+        brainstormStore.update(s => {
+            const newState = {
+                ...s,
+                inspiration: res.suggestions
+            };
+            localStorage.setItem("brainstormData_MVP", JSON.stringify(newState));
+            return newState;
+        });
+    } catch (error) {
+        console.error("Inspiration recommendation failed:", error);
+    } finally {
+        isRecommending.set(false);
     }
 }

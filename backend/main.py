@@ -25,8 +25,13 @@ app = FastAPI(
 
 from mindmap import MindmapUpdateResponse, MindmapNode, update_mindmap_agent
 from thought import analyze_thought_agent, ThoughtAnalysisResponse
+from inspiration import recommend_inspirations, InspirationRecommendResponse
 
 class MindmapUpdateRequest(BaseModel):
+    messages: List[str]
+    mindmap: Optional[dict] = {}
+
+class InspirationRecommendRequest(BaseModel):
     messages: List[str]
     mindmap: Optional[dict] = {}
 
@@ -54,6 +59,16 @@ async def analyze_thought(request: ThoughtRequest):
         raise HTTPException(status_code=400, detail="Text cannot be empty")
     
     return await analyze_thought_agent(request.text)
+
+@app.post("/api/v1/inspiration/recommend", response_model=InspirationRecommendResponse)
+async def recommend_inspiration(request: InspirationRecommendRequest):
+    if len(request.messages) <= 0:
+        raise HTTPException(status_code=400, detail="Messages cannot be empty")
+
+    return await recommend_inspirations(
+        messages=request.messages,
+        mindmap={k: MindmapNode.model_validate(v) for k, v in (request.mindmap or {}).items()}
+    )
 
 # Serve Static Files (Frontend)
 static_dir = os.path.join(os.path.dirname(__file__), "static")

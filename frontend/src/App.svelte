@@ -27,10 +27,10 @@
     <h1>Inspiration Bubble 🫧</h1>
     <div class="user-info">
         <span class="mode-badge">头脑风暴模式</span>
-        <button class="toggle-btn" on:click={toggleInspiration} class:active={$brainstormStore.showInspiration}>
+        <button class="toggle-btn" onclick={toggleInspiration} class:active={$brainstormStore.showInspiration}>
             {$brainstormStore.showInspiration ? '关闭灵感' : '💡 灵感推荐'}
         </button>
-        <button class="clear-btn" on:click={clearCache}>清空历史/缓存</button>
+        <button class="clear-btn" onclick={clearCache}>清空历史/缓存</button>
     </div>
 </header>
 

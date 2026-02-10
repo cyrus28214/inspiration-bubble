@@ -7,6 +7,7 @@
   import { brainstormStore, isAnalyzing } from '../stores';
   import { transformNodesToMindMap, flattenMindMapData } from '../utils/mindmapTransform';
   import type { MindMapData } from '../utils/mindmapTransform';
+  import { APP_CONFIG } from '../types';
 
   let container: HTMLElement;
   let mindMap: any;
@@ -149,7 +150,7 @@
 </script>
 
 <div class="mindmap-wrapper" bind:this={container} on:contextmenu|preventDefault role="application">
-    {#if $isAnalyzing}
+    {#if APP_CONFIG.showAnalyzingOverlay && $isAnalyzing}
         <div class="loading-overlay">
             <div class="spinner"></div>
             <p>AI 正在优化思维导图...</p>

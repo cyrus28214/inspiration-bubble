@@ -1,6 +1,8 @@
 # AGENTS.md
 
 - When function, class or file get bloated, split it.
+- Reuse existing code if available.
+- If task is complex, decompose.
 - Feel free to make breaking changes when necessary.
 
 ## Backend

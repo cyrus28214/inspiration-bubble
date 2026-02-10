@@ -8,12 +8,14 @@ const defaultData: IdeaInput = {
     summary: "",
     inspiration: [],
     voiceTextHistory: [],
-    showInspiration: false
+    showInspiration: true,
+    autoInspiration: true
 };
 
 export const highlightedKeyword = writable<string | null>(null);
 // Separate transient state proper: loading indicator
 export const isAnalyzing = writable<boolean>(false);
+export const isRecommending = writable<boolean>(false);
 
 function createBrainstormStore() {
     const { subscribe, set, update } = writable<IdeaInput>(defaultData);
@@ -88,15 +90,6 @@ function createBrainstormStore() {
                          delete parsed.allKeywords;
                     }
 
-                    // Also cleanup legacy 'keywords' property
-                    delete parsed.keywords;
-                    // Cleanup removed properties
-                    delete parsed.connections;
-                    delete parsed.zoom;
-
-                    // reset transient state - now removed from store completely, but removing potential garbage
-                    delete parsed.isAnalyzing;
-
                     update(stats => ({ ...stats, ...parsed }));
                 } catch (e) {
                     console.error("Failed to load local storage", e);
@@ -112,6 +105,13 @@ function createBrainstormStore() {
         toggleInspiration: () => {
             update(state => {
                 const newState = { ...state, showInspiration: !state.showInspiration };
+                localStorage.setItem("brainstormData_MVP", JSON.stringify(newState));
+                return newState;
+            });
+        },
+        toggleAutoInspiration: () => {
+            update(state => {
+                const newState = { ...state, autoInspiration: !state.autoInspiration };
                 localStorage.setItem("brainstormData_MVP", JSON.stringify(newState));
                 return newState;
             });
@@ -133,6 +133,25 @@ function createBrainstormStore() {
                 if (node) {
                     node.isCore = !node.isCore;
                 }
+                localStorage.setItem("brainstormData_MVP", JSON.stringify(state));
+                return state;
+            });
+        },
+        addInspirationNode: (nodeId: string, text: string, parentId: string) => {
+            update(state => {
+                // Don't add if already exists
+                if (state.nodes.find(n => n.id === nodeId)) return state;
+
+                state.nodes.push({
+                    id: nodeId,
+                    text: text,
+                    level: 1,
+                    isCore: false,
+                    isCollapsed: false,
+                    x: Math.random() * 400 + 200,
+                    y: Math.random() * 400 + 100,
+                    parent: parentId
+                });
                 localStorage.setItem("brainstormData_MVP", JSON.stringify(state));
                 return state;
             });

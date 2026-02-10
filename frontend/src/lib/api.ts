@@ -30,6 +30,23 @@ export interface MindmapUpdateResponse {
     updated_nodes: MindmapNode[];
 }
 
+export interface InspirationSuggestion {
+    title: string;
+    description: string;
+    reason: string;
+    node_id: string;
+    parent_node_id: string;
+}
+
+export interface InspirationRecommendRequest {
+    messages: string[];
+    mindmap?: Record<string, MindmapNode>;
+}
+
+export interface InspirationRecommendResponse {
+    suggestions: InspirationSuggestion[];
+}
+
 // API Client
 export const api = {
     summarize: async (title: string, content: string): Promise<SummarizeResponse> => {
@@ -65,6 +82,16 @@ export const api = {
             body: JSON.stringify({ text })
         });
         if (!response.ok) throw new Error('Failed to analyze thought');
+        return response.json();
+    },
+
+    recommendInspirations: async (req: InspirationRecommendRequest): Promise<InspirationRecommendResponse> => {
+        const response = await fetch('/api/v1/inspiration/recommend', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(req)
+        });
+        if (!response.ok) throw new Error('Failed to recommend inspirations');
         return response.json();
     }
 };
